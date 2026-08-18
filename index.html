@@ -955,31 +955,15 @@
       loadConfig();
       const hasState = loadState();
 
-      if (hasState && state.trips.length > 0) {
-        const continueShift = confirm(
-          `¿Continuar turno?\n\nTienes ${state.trips.length} viajes\nGanado: S/ ${state.totalEarned}\n\n¿Quieres continuar? (Cancelar = reiniciar)`
-        );
-        if (continueShift) {
-          state.isShiftActive = true;
-          if (!state.shiftStartTime) state.shiftStartTime = getNow();
-          if (!state.lastTripEndTime) state.lastTripEndTime = getNow();
-          if (state.isPaused) { state.isPaused = false; state.pauseStartTime = null; }
-          if (state.isTripActive) { state.isTripActive = false; state.tripStartTime = null; }
-        } else {
-          saveBackup();
-          state.isShiftActive = false;
-          state.shiftStartTime = null;
-          state.lastTripEndTime = null;
-          state.isPaused = false;
-          state.pauseStartTime = null;
-          state.totalPauseSeconds = 0;
-          state.isTripActive = false;
-          state.tripStartTime = null;
-          state.trips = [];
-          state.totalEarned = 0;
-          state.totalTripSeconds = 0;
-        }
-      } else {
+      // Al abrir (o reabrir tras un reinicio de Android a mitad de viaje),
+      // la app simplemente CONTINÚA con el estado guardado tal cual. No pregunta
+      // ni descarta nada: el turno, el viaje en curso y la espera se reconstruyen
+      // solos a partir de las marcas de tiempo ya guardadas en localStorage.
+      // Antes, aquí se descartaba el viaje activo y se pedía confirmación —
+      // eso hacía que en carreras largas (cuando el sistema recargaba la app)
+      // se perdiera el viaje en curso. Ese comportamiento se eliminó.
+      if (!hasState) {
+        // Primera vez / sin datos: arranca limpio.
         state.isShiftActive = false;
         state.shiftStartTime = null;
         state.lastTripEndTime = null;
@@ -992,6 +976,7 @@
         state.totalEarned = 0;
         state.totalTripSeconds = 0;
       }
+      // Si hay estado guardado, se respeta exactamente como quedó — no se toca.
 
       saveState();
       updateDisplay();
@@ -1013,12 +998,10 @@
 
       moneyModal.addEventListener('click', function (e) {
         if (e.target === moneyModal) {
-          if (state.isTripActive) {
-            state.isTripActive = false;
-            state.tripStartTime = null;
-            saveState();
-            updateDisplay();
-          }
+          // Tocar fuera del teclado solo lo cierra; el viaje sigue activo y
+          // corriendo. Antes esto descartaba el viaje entero (perdiendo su
+          // tiempo acumulado ante un toque accidental). Para cancelar un viaje
+          // de verdad está la ruedita → "Cancelar último viaje".
           moneyModal.classList.remove('active');
         }
       });
