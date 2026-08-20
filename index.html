@@ -172,6 +172,47 @@
   .summary-goal.red{border-color:var(--state-red);}
   .summary-goal.red .summary-goal-label{color:var(--state-red);}
 
+  /* Campo de gastos + neto en el resumen */
+  .summary-net-row{display:flex;justify-content:space-between;align-items:baseline;
+                   padding:9px 2px;border-bottom:1px solid var(--hairline);}
+  .summary-expense-btn{width:100%;margin-bottom:16px;padding:12px 16px;border-radius:12px;
+                       background:var(--bg-void);border:1px dashed var(--hairline);color:var(--text-muted);
+                       font-size:14px;font-weight:500;display:flex;justify-content:space-between;align-items:center;}
+  .summary-expense-btn .exp-value{font-family:'IBM Plex Mono',monospace;color:var(--state-amber);font-weight:600;}
+  .summary-net-value{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;
+                     font-variant-numeric:tabular-nums;}
+  .summary-net-value.pos{color:var(--state-green);}
+  .summary-net-value.neg{color:var(--state-red);}
+
+  /* Sección de Historial */
+  .history-week{background:var(--bg-panel);border:1px solid var(--hairline);border-radius:16px;
+                padding:16px 18px;margin-bottom:16px;}
+  .history-week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .history-week-nav button{background:none;border:none;color:var(--text-muted);font-size:22px;
+                           width:36px;height:36px;border-radius:8px;}
+  .history-week-nav button:active{background:var(--bg-void);}
+  .history-week-nav button:disabled{opacity:.25;}
+  .history-week-title{font-size:12px;letter-spacing:1px;color:var(--text-muted);text-transform:uppercase;
+                      font-weight:600;text-align:center;}
+  .history-week-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 8px;}
+  .history-week-stat{display:flex;flex-direction:column;gap:2px;}
+  .history-week-stat .lbl{font-size:10px;letter-spacing:1px;color:var(--text-faint);text-transform:uppercase;font-weight:600;}
+  .history-week-stat .val{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .history-week-stat .val.net.pos{color:var(--state-green);}
+  .history-week-stat .val.net.neg{color:var(--state-red);}
+  .history-week-stat .val.earn{color:var(--lcd-teal);}
+  .history-week-stat .val.exp{color:var(--state-amber);}
+  .history-day-row{display:flex;align-items:center;padding:12px 2px;border-bottom:1px solid var(--hairline);
+                   font-family:'IBM Plex Mono',monospace;font-size:14px;}
+  .history-day-date{flex:1;color:var(--text-primary);font-weight:500;}
+  .history-day-detail{color:var(--text-faint);font-size:12px;margin-right:12px;}
+  .history-day-net{font-weight:700;font-variant-numeric:tabular-nums;}
+  .history-day-net.pos{color:var(--state-green);}
+  .history-day-net.neg{color:var(--state-red);}
+  .history-empty{color:var(--text-faint);text-align:center;padding:30px 0;font-family:'Inter',sans-serif;font-size:14px;}
+  .history-back-btn{background:var(--lcd-teal);color:#07130A;border:none;border-radius:14px;
+                    padding:14px;font-size:15px;font-weight:600;width:100%;margin-top:8px;}
+
   @media (max-width:420px){
     .lcd-digits{font-size:40px;}
     .lcd-centis{font-size:13px;}
@@ -220,11 +261,11 @@
     <section class="semaforo" id="semaforoBox">
       <div class="semaforo-row">
         <span class="eyebrow">Tu ritmo</span>
-        <span class="eyebrow">Necesitas</span>
+        <span class="eyebrow">Te falta</span>
       </div>
       <div class="semaforo-rates">
         <span class="rate-actual" id="rateActual">S/ 0/h</span>
-        <span class="rate-goal" id="rateGoal">S/ 0/h</span>
+        <span class="rate-goal" id="rateGoal">S/ 0</span>
       </div>
       <div class="semaforo-message" id="semaforoMessage">Configura tu turno</div>
       <div class="semaforo-sub" id="semaforoSub">Ajusta en ⚙️ y empieza</div>
@@ -254,6 +295,9 @@
       Fin
     </button>
     <div class="admin-group">
+      <button class="btn-reset" id="openHistoryBtn" title="Historial">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+      </button>
       <button class="btn-reset" id="resetShiftBtn" title="Cerrar turno">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
       </button>
@@ -283,22 +327,11 @@
   <div class="modal-overlay" id="configModal">
     <div class="modal-content">
       <div class="modal-title">Configuración</div>
-      <div class="modal-subtitle">Ajusta tu turno y metas</div>
+      <div class="modal-subtitle">Tu meta de ingresos del día</div>
       <div class="config-group">
-        <label>Hora de inicio</label>
-        <input type="time" id="configStart" value="06:30">
-      </div>
-      <div class="config-group">
-        <label>Hora de fin</label>
-        <input type="time" id="configEnd" value="21:30">
-      </div>
-      <div class="config-group">
-        <label>Horas de descanso</label>
-        <input type="number" id="configBreak" min="0" max="6" step="0.5" value="3">
-      </div>
-      <div class="config-group">
-        <label>Tarifa ideal (S/ /h)</label>
-        <input type="number" id="configRate" min="5" max="50" step="1" value="25">
+        <label>Meta diaria (S/ de ingreso bruto)</label>
+        <input type="number" id="configGoal" min="50" max="1000" step="10" value="200">
+        <small>Lo que quieres facturar en el día, antes de gastos.</small>
       </div>
       <div class="config-actions">
         <button class="btn-restore-backup" id="restoreBackupModalBtn">Restaurar</button>
@@ -348,6 +381,20 @@
           <span class="summary-label">Ritmo promedio</span>
           <span class="summary-value" id="summaryAvgRate">—</span>
         </div>
+        <div class="summary-row">
+          <span class="summary-label">Ganado (bruto)</span>
+          <span class="summary-value" id="summaryEarned">S/ 0</span>
+        </div>
+      </div>
+
+      <button class="summary-expense-btn" id="summaryExpenseBtn">
+        <span>Gastos del día (gasolina, comida, etc.)</span>
+        <span class="exp-value" id="summaryExpenseValue">S/ 0</span>
+      </button>
+
+      <div class="summary-net-row">
+        <span class="summary-label" style="font-weight:600;">Te quedó (neto)</span>
+        <span class="summary-net-value pos" id="summaryNetValue">S/ 0</span>
       </div>
 
       <div class="summary-goal" id="summaryGoalBox">
@@ -362,6 +409,74 @@
     </div>
   </div>
 
+  <div class="modal-overlay" id="expenseModal">
+    <div class="modal-content">
+      <div class="modal-title">Gastos del día</div>
+      <div class="modal-subtitle">Gasolina, comida, cochera, etc. (solo hoy)</div>
+      <div class="modal-display" id="expenseDisplay">0</div>
+      <div class="keypad-grid">
+        <button data-value="1">1</button><button data-value="2">2</button><button data-value="3">3</button>
+        <button data-value="4">4</button><button data-value="5">5</button><button data-value="6">6</button>
+        <button data-value="7">7</button><button data-value="8">8</button><button data-value="9">9</button>
+        <button class="btn-clear" data-value="clear">⌫</button>
+        <button data-value="0">0</button>
+        <button class="btn-confirm" data-value="confirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="endHourModal">
+    <div class="modal-content">
+      <div class="modal-title">¿Hasta qué hora trabajas hoy?</div>
+      <div class="modal-subtitle">Para calcular si llegas a tu meta. Puedes cambiarlo después.</div>
+      <div class="config-group">
+        <label>Hora de fin de hoy</label>
+        <input type="time" id="endHourInput" value="18:00">
+      </div>
+      <div class="config-actions">
+        <button class="btn-close-config" id="skipEndHourBtn">Sin hora fija</button>
+        <button class="btn-save-config" id="confirmEndHourBtn">Empezar turno</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="historyModal">
+    <div class="modal-content">
+      <div class="modal-title">Historial</div>
+      <div class="modal-subtitle">Tus días y tu semana</div>
+
+      <div class="history-week">
+        <div class="history-week-nav">
+          <button id="historyPrevWeek">‹</button>
+          <span class="history-week-title" id="historyWeekTitle">Esta semana</span>
+          <button id="historyNextWeek">›</button>
+        </div>
+        <div class="history-week-grid">
+          <div class="history-week-stat">
+            <span class="lbl">Neto de la semana</span>
+            <span class="val net pos" id="historyWeekNet">S/ 0</span>
+          </div>
+          <div class="history-week-stat">
+            <span class="lbl">Días trabajados</span>
+            <span class="val" id="historyWeekDays">0</span>
+          </div>
+          <div class="history-week-stat">
+            <span class="lbl">Ganado</span>
+            <span class="val earn" id="historyWeekEarned">S/ 0</span>
+          </div>
+          <div class="history-week-stat">
+            <span class="lbl">Gastos</span>
+            <span class="val exp" id="historyWeekExpenses">S/ 0</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="historyDaysList"></div>
+
+      <button class="history-back-btn" id="closeHistoryBtn">Volver</button>
+    </div>
+  </div>
+
   <script>
     // ========================================
     // 1. CONFIGURACIÓN Y ESTADO
@@ -369,12 +484,14 @@
     const CONFIG_KEY = 'taxi_config';
     const STATE_KEY = 'taxi_state';
     const BACKUP_KEY = 'taxi_state_backup';
+    const HISTORY_KEY = 'taxi_history';
 
-    let config = { startHour: 6.5, endHour: 21.5, breakHours: 3, idealRate: 25 };
+    let config = { dailyGoal: 200 };
 
     let state = {
       isShiftActive: false,
       shiftStartTime: null,
+      plannedEndHour: null,   // hora de fin que el conductor define HOY (decimal, ej. 18.5 = 6:30pm)
       isPaused: false,
       pauseStartTime: null,
       totalPauseSeconds: 0,
@@ -388,6 +505,8 @@
 
     let currentMoneyInput = '0';
     let pendingTripDuration = 0;
+    let pendingExpenses = 0;
+    let historyWeekOffset = 0;
 
     // ========================================
     // 2. REFERENCIAS DOM
@@ -417,10 +536,7 @@
     const moneyModal = $('moneyModal');
     const moneyDisplay = $('moneyDisplay');
     const configModal = $('configModal');
-    const configStart = $('configStart');
-    const configEnd = $('configEnd');
-    const configBreak = $('configBreak');
-    const configRate = $('configRate');
+    const configGoal = $('configGoal');
     const resetMenuModal = $('resetMenuModal');
     const summaryModal = $('summaryModal');
     const summaryTotalHours = $('summaryTotalHours');
@@ -429,6 +545,13 @@
     const summaryTripCount = $('summaryTripCount');
     const summaryAvgRate = $('summaryAvgRate');
     const summaryGoalBox = $('summaryGoalBox');
+    const summaryEarned = $('summaryEarned');
+    const summaryExpenseBtn = $('summaryExpenseBtn');
+    const summaryExpenseValue = $('summaryExpenseValue');
+    const summaryNetValue = $('summaryNetValue');
+    const expenseModal = $('expenseModal');
+    const expenseDisplay = $('expenseDisplay');
+    const historyModal = $('historyModal');
     const summaryGoalLabel = $('summaryGoalLabel');
     const summaryGoalValue = $('summaryGoalValue');
 
@@ -488,13 +611,17 @@
         const raw = localStorage.getItem(CONFIG_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          config = { ...config, ...parsed };
+          // Migración: si viene una config vieja (horario+tarifa) sin dailyGoal,
+          // estimamos una meta razonable a partir de ella; si no, usamos 200.
+          if (parsed.dailyGoal == null && parsed.idealRate != null) {
+            const hrs = Math.max(0, (parsed.endHour - parsed.startHour) - (parsed.breakHours || 0));
+            parsed.dailyGoal = Math.round((hrs * parsed.idealRate) / 10) * 10 || 200;
+          }
+          config = { dailyGoal: 200, ...{ dailyGoal: parsed.dailyGoal } };
         }
       } catch (e) {}
-      configStart.value = decimalToTimeString(config.startHour);
-      configEnd.value = decimalToTimeString(config.endHour);
-      configBreak.value = config.breakHours;
-      configRate.value = config.idealRate;
+      if (!(config.dailyGoal > 0)) config.dailyGoal = 200;
+      configGoal.value = config.dailyGoal;
     }
 
     // ========================================
@@ -561,32 +688,47 @@
       return Math.max(0, (getNow() - end) / 1000);
     }
     function getBurnedMoney() {
-      return (getCurrentWaitSeconds() / 3600) * config.idealRate;
+      // Cuánto "cuesta" la espera actual, valorada según tu ritmo real del día
+      // (lo que estás ganando por hora). Si aún no hay ritmo, usa un estimado
+      // conservador basado en la meta (meta / 10h) para no mostrar 0.
+      let ratePerHour = getActualRate();
+      if (!(ratePerHour > 0)) ratePerHour = getGoalAmount() / 10;
+      return (getCurrentWaitSeconds() / 3600) * ratePerHour;
     }
     function getTotalEarned() { return state.totalEarned || 0; }
-    function getGoalAmount() {
-      const totalHours = config.endHour - config.startHour;
-      const effectiveHours = Math.max(0, totalHours - config.breakHours);
-      return effectiveHours * config.idealRate;
-    }
-    function getRemainingTimeSeconds() {
-      const now = new Date();
-      const nowHours = now.getHours() + (now.getMinutes() / 60);
-      return Math.max(0, (config.endHour - nowHours) * 3600);
-    }
+    // La meta del día es un MONTO de ingreso bruto que el conductor define
+    // (ej. S/200), no un cálculo por horas. Las horas son el costo de llegar
+    // a ese monto, no la meta en sí.
+    function getGoalAmount() { return config.dailyGoal || 0; }
+
+    // Cuánto falta para la meta del día (monto que baja con cada carrera).
     function getRemainingMoney() { return Math.max(0, getGoalAmount() - getTotalEarned()); }
-    function getRequiredRate() {
-      const remainingTime = getRemainingTimeSeconds();
-      if (remainingTime <= 0) return null;
-      return getRemainingMoney() / (remainingTime / 3600);
+
+    // Tiempo útil que queda hoy, según la hora de fin que el conductor definió
+    // al iniciar el turno. Si no definió ninguna, devuelve null (sin proyección).
+    function getRemainingTimeSeconds() {
+      if (state.plannedEndHour == null) return null;
+      const now = new Date();
+      const nowHours = now.getHours() + (now.getMinutes() / 60) + (now.getSeconds() / 3600);
+      return Math.max(0, (state.plannedEndHour - nowHours) * 3600);
     }
+
+    // El "soles/hora" es el TERMÓMETRO de eficiencia (el "por hora honesto"),
+    // no la meta. Se calcula sobre el tiempo total de turno.
     function getActualRate() {
-      // Se calcula sobre el tiempo TOTAL de turno (igual que "Necesitas"),
-      // no solo sobre el tiempo en viaje — así ambos números se comparan
-      // en la misma base y reflejan tu situación real, incluyendo la espera.
       const totalHours = getShiftDurationSeconds() / 3600;
       if (totalHours < 0.01) return 0;
       return getTotalEarned() / totalHours;
+    }
+
+    // Ritmo que necesitarías por hora para llegar a la meta en el tiempo que
+    // queda hoy. Se usa para PROYECTAR (¿llego o no?), no como meta principal.
+    function getRequiredRate() {
+      const remainingTime = getRemainingTimeSeconds();
+      if (remainingTime == null || remainingTime <= 0) return null;
+      const remMoney = getRemainingMoney();
+      if (remMoney <= 0) return 0;
+      return remMoney / (remainingTime / 3600);
     }
 
     // ========================================
@@ -616,9 +758,9 @@
         waitRow.className = 'wait-row';
         semaforoBox.className = 'semaforo';
         rateActual.textContent = 'S/ 0/h';
-        rateGoal.textContent = 'S/ 0/h';
+        rateGoal.textContent = `S/ ${getGoalAmount().toFixed(0)}`;
         semaforoMessage.textContent = 'Presiona "Iniciar turno" para empezar';
-        semaforoSub.textContent = 'Tu turno aún no comienza';
+        semaforoSub.textContent = `Tu meta de hoy: S/ ${getGoalAmount().toFixed(0)}`;
         renderTrips();
         startTripBtn.disabled = false;
         startBtnLabel.textContent = 'Iniciar turno';
@@ -658,54 +800,85 @@
       }
       waitRow.className = 'wait-row ' + waitClass;
 
-      // Semáforo
-      // Al inicio del turno, con muy pocos segundos totales, el ritmo puede
-      // saltar de forma inestable. Por eso exigimos un mínimo de tiempo de
-      // turno antes de confiar en el número (ya no depende del tiempo en viaje).
-      const MIN_SHIFT_SECONDS_FOR_RATE = 180; // 3 minutos
+      // ===== SEMÁFORO (modelo de meta por MONTO diario) =====
+      // "Tu ritmo" = termómetro de eficiencia (soles/hora honesto).
+      // "Te falta" = cuánto falta EN SOLES para la meta del día (baja con cada carrera).
+      // El color y el mensaje proyectan si llegarás a la meta en el tiempo que
+      // queda hoy (según la hora de fin que definiste al iniciar el turno).
+      const MIN_SHIFT_SECONDS_FOR_RATE = 180; // 3 min antes de confiar en el ritmo
       const hasEnoughData = totalSec >= MIN_SHIFT_SECONDS_FOR_RATE;
       const actualRate = hasEnoughData ? getActualRate() : null;
       const actualRateText = actualRate === null ? '—' : `S/ ${actualRate.toFixed(0)}/h`;
-      const requiredRate = getRequiredRate();
-      const requiredRateText = requiredRate === null ? '—' : `S/ ${Math.max(0, requiredRate).toFixed(0)}/h`;
-      const remainingTime = getRemainingTimeSeconds();
-      const isFinished = remainingTime <= 0;
+
+      const earned = getTotalEarned();
+      const goal = getGoalAmount();
+      const remMoney = getRemainingMoney();          // cuánto falta en soles
+      const goalReached = remMoney <= 0;
+      const remTimeSec = getRemainingTimeSeconds();   // null si no definió hora de fin
+      const requiredRate = getRequiredRate();         // ritmo necesario para llegar, o null
+
+      // Texto del número derecho: cuánto falta para la meta.
+      const remMoneyText = goalReached ? '✓ Meta' : `S/ ${remMoney.toFixed(0)}`;
 
       let stateColor, message, sub;
 
-      if (isFinished) {
-        stateColor = 'red';
-        message = 'Extiende turno o acepta todo.';
-        sub = `Ganaste S/ ${getTotalEarned().toFixed(0)} de S/ ${getGoalAmount().toFixed(0)}.`;
+      if (goalReached) {
+        // Ya llegó a la meta del día.
+        stateColor = 'green';
+        message = '¡Meta del día cumplida! 🎯';
+        const extra = earned - goal;
+        sub = extra > 0 ? `Vas S/ ${extra.toFixed(0)} por encima. Todo lo demás es ganancia.` : 'Cada carrera de aquí suma a tu semana.';
       } else if (waitMinutes > 15) {
+        // Prioridad: espera larga = perdiendo tiempo, sin importar el resto.
         stateColor = 'red';
         message = `¡Llevas ${waitF.mins}m sin viaje! Acepta lo que venga.`;
-        sub = `Ritmo actual: ${actualRateText}.`;
+        sub = `Te faltan S/ ${remMoney.toFixed(0)} para tu meta.`;
       } else if (waitMinutes > 5) {
         stateColor = 'amber';
-        message = `Ya pasaron ${waitF.mins}m. Toma algo.`;
-        sub = `Ritmo actual: ${actualRateText}.`;
-      } else if (!hasEnoughData) {
+        message = `Ya pasaron ${waitF.mins}m sin carrera. Baja tu filtro.`;
+        sub = `Te faltan S/ ${remMoney.toFixed(0)} para tu meta.`;
+      } else if (remTimeSec == null) {
+        // No definió hora de fin: no hay proyección, solo cuánto falta.
         stateColor = '';
-        message = 'Acumulando datos de tus viajes...';
-        sub = `Necesitas ${requiredRateText}.`;
-      } else if (actualRate >= 24) {
-        stateColor = 'green';
-        message = remainingTime < 7200 ? '¡Buen ritmo! Cierra fuerte.' : 'Buen ritmo. Sigue así.';
-        sub = `Espera: ${waitF.mins}m ${waitF.secs}s.`;
-      } else if (actualRate >= 18) {
-        stateColor = 'amber';
-        message = remainingTime < 7200 ? '¡Último esfuerzo! Acepta carreras cortas.' : 'Acepta carreras cortas. No rechaces.';
-        sub = `Necesitas ${requiredRateText}.`;
-      } else {
+        message = `Te faltan S/ ${remMoney.toFixed(0)} para tu meta del día.`;
+        sub = hasEnoughData ? `Ritmo: ${actualRateText}.` : 'Acumulando datos...';
+      } else if (remTimeSec <= 0) {
+        // Se acabó el tiempo planeado y no llegó a la meta.
         stateColor = 'red';
-        message = (remainingTime < 7200 || actualRate < 12) ? '¡Misión casi imposible! Extiende turno o baja meta.' : 'Ritmo insostenible. Piensa en extender.';
-        sub = `Necesitas ${requiredRateText}.`;
+        message = `Se acabó tu tiempo y faltan S/ ${remMoney.toFixed(0)}.`;
+        sub = '¿Extiendes un rato o cierras el día?';
+      } else {
+        // Hay tiempo y hay meta pendiente: PROYECTAR si llega.
+        const remHours = remTimeSec / 3600;
+        const remHoursText = remHours >= 1 ? `${remHours.toFixed(1)}h` : `${Math.round(remTimeSec / 60)}m`;
+        // Ritmo que traes vs. ritmo que necesitas para llegar a tiempo.
+        const paceOK = hasEnoughData && actualRate >= requiredRate;
+
+        if (!hasEnoughData) {
+          stateColor = '';
+          message = `Te faltan S/ ${remMoney.toFixed(0)}. Tienes ${remHoursText}.`;
+          sub = 'Acumulando datos de tu ritmo...';
+        } else if (actualRate >= requiredRate * 1.05) {
+          // Vas holgado.
+          stateColor = 'green';
+          message = `Vas bien. A este ritmo llegas a la meta.`;
+          sub = `Faltan S/ ${remMoney.toFixed(0)} · te quedan ${remHoursText}.`;
+        } else if (actualRate >= requiredRate * 0.85) {
+          // Vas justo.
+          stateColor = 'amber';
+          message = `Vas justo. No aflojes para llegar a la meta.`;
+          sub = `Faltan S/ ${remMoney.toFixed(0)} · te quedan ${remHoursText}.`;
+        } else {
+          // Vas atrasado.
+          stateColor = 'red';
+          message = `Vas atrasado. Necesitas apurar el ritmo.`;
+          sub = `Faltan S/ ${remMoney.toFixed(0)} en ${remHoursText} (S/ ${requiredRate.toFixed(0)}/h).`;
+        }
       }
 
       semaforoBox.className = `semaforo ${stateColor}`;
       rateActual.textContent = actualRateText;
-      rateGoal.textContent = requiredRateText;
+      rateGoal.textContent = remMoneyText;
       semaforoMessage.textContent = message;
       semaforoSub.textContent = sub;
 
@@ -760,16 +933,12 @@
     function startShiftOrTrip() {
       if (state.isPaused) return;
       if (!state.isShiftActive) {
-        // Solo arranca el turno y la espera. Todavía NO hay viaje activo:
-        // el conductor recién está empezando a esperar una carrera.
-        state.isShiftActive = true;
-        state.shiftStartTime = getNow();
-        state.lastTripEndTime = getNow();
-        state.totalPauseSeconds = 0;
-        if (state.trips.length === 0) { state.totalEarned = 0; state.totalTripSeconds = 0; }
-        saveState();
-        saveBackup();
-        updateDisplay();
+        // Antes de arrancar el turno, preguntar hasta qué hora trabaja HOY.
+        // Sugerir una hora de fin razonable (ahora + 8h) como valor inicial.
+        const suggested = new Date(getNow() + 8 * 3600 * 1000);
+        $('endHourInput').value =
+          `${String(suggested.getHours()).padStart(2, '0')}:${String(suggested.getMinutes()).padStart(2, '0')}`;
+        $('endHourModal').classList.add('active');
         return;
       }
       if (state.isTripActive) return;
@@ -777,6 +946,20 @@
       state.isTripActive = true;
       state.tripStartTime = getNow();
       saveState();
+      updateDisplay();
+    }
+
+    // Arranca el turno con (o sin) hora de fin definida para hoy.
+    function beginShift(plannedEndHour) {
+      state.isShiftActive = true;
+      state.shiftStartTime = getNow();
+      state.lastTripEndTime = getNow();
+      state.plannedEndHour = plannedEndHour; // decimal o null
+      state.totalPauseSeconds = 0;
+      if (state.trips.length === 0) { state.totalEarned = 0; state.totalTripSeconds = 0; }
+      $('endHourModal').classList.remove('active');
+      saveState();
+      saveBackup();
       updateDisplay();
     }
     function endTrip() {
@@ -850,13 +1033,12 @@
         alert('No hay un turno activo para cerrar.');
         return;
       }
+      pendingExpenses = 0; // se resetea cada vez que se abre el resumen
       const totalSec = getShiftDurationSeconds();
       const tripSec = getTripSeconds();
       const deadSec = getTotalDeadSeconds();
       const earned = getTotalEarned();
       const goal = getGoalAmount();
-      // Misma base que "Tu ritmo" en pantalla: tiempo TOTAL de turno, no solo
-      // tiempo en viajes — para que ambos números cuenten la misma verdad.
       const avgRate = totalSec > 0.01 * 3600 ? (earned / (totalSec / 3600)) : null;
 
       summaryTotalHours.textContent = formatHHMMSS(totalSec);
@@ -864,6 +1046,8 @@
       summaryDeadHours.textContent = formatHHMMSS(deadSec);
       summaryTripCount.textContent = state.trips.length;
       summaryAvgRate.textContent = avgRate === null ? '—' : `S/ ${avgRate.toFixed(0)}/h`;
+      summaryEarned.textContent = `S/ ${earned.toFixed(0)}`;
+      refreshSummaryNet();
 
       const diff = earned - goal;
       summaryGoalValue.textContent = `S/ ${earned.toFixed(0)} de S/ ${goal.toFixed(0)}`;
@@ -876,11 +1060,24 @@
       }
       summaryModal.classList.add('active');
     }
+
+    // Actualiza la fila de gastos y el neto (ganado − gastos) en el resumen.
+    function refreshSummaryNet() {
+      const earned = getTotalEarned();
+      const net = earned - pendingExpenses;
+      summaryExpenseValue.textContent = `S/ ${pendingExpenses.toFixed(0)}`;
+      summaryNetValue.textContent = `S/ ${net.toFixed(0)}`;
+      summaryNetValue.className = 'summary-net-value ' + (net >= 0 ? 'pos' : 'neg');
+    }
+
     function closeSummary() { summaryModal.classList.remove('active'); }
     function confirmCloseShift() {
+      // Guarda el día cerrado en el historial ANTES de limpiar el estado.
+      saveDayToHistory();
       saveBackup();
       state.isShiftActive = false;
       state.shiftStartTime = null;
+      state.plannedEndHour = null;
       state.isPaused = false;
       state.pauseStartTime = null;
       state.totalPauseSeconds = 0;
@@ -896,8 +1093,136 @@
     }
 
     // ========================================
-    // 10. TECLADO
+    // HISTORIAL Y GASTOS
     // ========================================
+    function loadHistory() {
+      try {
+        const raw = localStorage.getItem(HISTORY_KEY);
+        if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; }
+      } catch (e) {}
+      return [];
+    }
+    function saveHistory(arr) {
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch (e) {}
+    }
+    function saveDayToHistory() {
+      const earned = getTotalEarned();
+      const entry = {
+        ts: getNow(),                          // marca de tiempo del cierre
+        earned: earned,                        // ganado bruto
+        expenses: pendingExpenses,             // gastos del día
+        net: earned - pendingExpenses,         // lo que quedó
+        shiftSec: getShiftDurationSeconds(),
+        tripSec: getTripSeconds(),
+        trips: state.trips.length
+      };
+      const hist = loadHistory();
+      hist.push(entry);
+      saveHistory(hist);
+    }
+
+    // --- Teclado de gastos ---
+    function openExpenseKeypad() {
+      currentMoneyInput = pendingExpenses > 0 ? String(pendingExpenses) : '0';
+      expenseDisplay.textContent = currentMoneyInput;
+      expenseModal.classList.add('active');
+    }
+    function handleExpenseKeypad(e) {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const value = btn.dataset.value;
+      if (!value) return;
+      if (value === 'clear') {
+        currentMoneyInput = currentMoneyInput.slice(0, -1) || '0';
+        expenseDisplay.textContent = currentMoneyInput;
+        return;
+      }
+      if (value === 'confirm') {
+        pendingExpenses = parseInt(currentMoneyInput, 10) || 0;
+        expenseModal.classList.remove('active');
+        refreshSummaryNet();
+        return;
+      }
+      if (currentMoneyInput === '0') currentMoneyInput = value;
+      else if (currentMoneyInput.length < 6) currentMoneyInput += value;
+      expenseDisplay.textContent = currentMoneyInput;
+    }
+
+    // --- Cálculo de semanas (lunes a domingo) ---
+    // Devuelve el lunes 00:00 de la semana que contiene la fecha dada.
+    function getMondayOf(date) {
+      const d = new Date(date);
+      d.setHours(0, 0, 0, 0);
+      const day = d.getDay();                  // 0=domingo, 1=lunes...
+      const diff = (day === 0 ? -6 : 1 - day); // retrocede al lunes
+      d.setDate(d.getDate() + diff);
+      return d;
+    }
+    function formatDayLabel(ts) {
+      const d = new Date(ts);
+      const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+      const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]}`;
+    }
+    function formatWeekTitle(monday) {
+      const sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() + 6);
+      const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+      return `${monday.getDate()} ${meses[monday.getMonth()]} – ${sunday.getDate()} ${meses[sunday.getMonth()]}`;
+    }
+
+    function openHistory() {
+      historyWeekOffset = 0;
+      renderHistory();
+      historyModal.classList.add('active');
+    }
+    function closeHistory() { historyModal.classList.remove('active'); }
+
+    function renderHistory() {
+      const hist = loadHistory();
+
+      // Semana objetivo según el desplazamiento (0 = esta semana, -1 = anterior...)
+      const baseMonday = getMondayOf(getNow());
+      const targetMonday = new Date(baseMonday);
+      targetMonday.setDate(targetMonday.getDate() + historyWeekOffset * 7);
+      const targetSunday = new Date(targetMonday);
+      targetSunday.setDate(targetSunday.getDate() + 7); // exclusivo
+
+      const weekDays = hist.filter(e => e.ts >= targetMonday.getTime() && e.ts < targetSunday.getTime());
+
+      const weekEarned = weekDays.reduce((a, e) => a + e.earned, 0);
+      const weekExpenses = weekDays.reduce((a, e) => a + e.expenses, 0);
+      const weekNet = weekEarned - weekExpenses;
+
+      $('historyWeekTitle').textContent = historyWeekOffset === 0 ? 'Esta semana' : formatWeekTitle(targetMonday);
+      $('historyWeekEarned').textContent = `S/ ${weekEarned.toFixed(0)}`;
+      $('historyWeekExpenses').textContent = `S/ ${weekExpenses.toFixed(0)}`;
+      $('historyWeekDays').textContent = weekDays.length;
+      const netEl = $('historyWeekNet');
+      netEl.textContent = `S/ ${weekNet.toFixed(0)}`;
+      netEl.className = 'val net ' + (weekNet >= 0 ? 'pos' : 'neg');
+
+      // No dejar avanzar más allá de la semana actual
+      $('historyNextWeek').disabled = historyWeekOffset >= 0;
+
+      // Lista de días (más reciente primero)
+      const list = $('historyDaysList');
+      if (weekDays.length === 0) {
+        list.innerHTML = `<div class="history-empty">No hay días registrados en esta semana.</div>`;
+        return;
+      }
+      const sorted = weekDays.slice().sort((a, b) => b.ts - a.ts);
+      let html = '';
+      for (const e of sorted) {
+        const netClass = e.net >= 0 ? 'pos' : 'neg';
+        html += `<div class="history-day-row">
+                   <span class="history-day-date">${formatDayLabel(e.ts)}</span>
+                   <span class="history-day-detail">${e.trips} viajes · S/ ${e.earned.toFixed(0)} − S/ ${e.expenses.toFixed(0)}</span>
+                   <span class="history-day-net ${netClass}">S/ ${e.net.toFixed(0)}</span>
+                 </div>`;
+      }
+      list.innerHTML = html;
+    }
     function handleKeypadClick(e) {
       const btn = e.target.closest('button');
       if (!btn) return;
@@ -921,31 +1246,18 @@
     // 11. CONFIGURACIÓN
     // ========================================
     function openConfig() {
-      configStart.value = decimalToTimeString(config.startHour);
-      configEnd.value = decimalToTimeString(config.endHour);
-      configBreak.value = config.breakHours;
-      configRate.value = config.idealRate;
+      configGoal.value = config.dailyGoal;
       configModal.classList.add('active');
     }
     function closeConfig() { configModal.classList.remove('active'); }
     function saveConfigFromModal() {
-      const startDec = timeStringToDecimal(configStart.value);
-      const endDec = timeStringToDecimal(configEnd.value);
-      const breakH = parseFloat(configBreak.value);
-      const rate = parseFloat(configRate.value);
-      if (startDec === null) { alert('Hora de inicio inválida.'); return; }
-      if (endDec === null) { alert('Hora de fin inválida.'); return; }
-      if (endDec <= startDec) { alert('La hora de fin debe ser mayor a la de inicio (turnos que cruzan la medianoche no están soportados aún).'); return; }
-      if (isNaN(breakH) || breakH < 0 || breakH > 6) { alert('Descanso inválido (0-6).'); return; }
-      if (isNaN(rate) || rate < 5 || rate > 50) { alert('Tarifa inválida (5-50).'); return; }
-      config.startHour = startDec;
-      config.endHour = endDec;
-      config.breakHours = breakH;
-      config.idealRate = rate;
+      const goal = parseFloat(configGoal.value);
+      if (isNaN(goal) || goal < 50 || goal > 1000) { alert('Meta inválida (entre 50 y 1000).'); return; }
+      config.dailyGoal = Math.round(goal);
       saveConfig();
       closeConfig();
       updateDisplay();
-      alert('Configuración guardada. Meta: S/ ' + getGoalAmount().toFixed(0));
+      alert('Meta guardada: S/ ' + config.dailyGoal);
     }
 
     // ========================================
@@ -983,6 +1295,11 @@
 
       document.querySelector('.keypad-grid').addEventListener('click', handleKeypadClick);
       startTripBtn.addEventListener('click', startShiftOrTrip);
+      $('confirmEndHourBtn').addEventListener('click', function () {
+        const dec = timeStringToDecimal($('endHourInput').value);
+        beginShift(dec); // si es null (hora inválida), arranca sin proyección
+      });
+      $('skipEndHourBtn').addEventListener('click', function () { beginShift(null); });
       endTripBtn.addEventListener('click', endTrip);
       pauseBtn.addEventListener('click', togglePause);
       resetShiftBtn.addEventListener('click', openResetMenu);
@@ -991,6 +1308,12 @@
       $('dismissResetMenuBtn').addEventListener('click', closeResetMenu);
       $('cancelSummaryBtn').addEventListener('click', closeSummary);
       $('confirmCloseShiftBtn').addEventListener('click', confirmCloseShift);
+      summaryExpenseBtn.addEventListener('click', openExpenseKeypad);
+      expenseModal.querySelector('.keypad-grid').addEventListener('click', handleExpenseKeypad);
+      $('openHistoryBtn').addEventListener('click', openHistory);
+      $('closeHistoryBtn').addEventListener('click', closeHistory);
+      $('historyPrevWeek').addEventListener('click', function () { historyWeekOffset--; renderHistory(); });
+      $('historyNextWeek').addEventListener('click', function () { if (historyWeekOffset < 0) { historyWeekOffset++; renderHistory(); } });
       $('openConfigBtn').addEventListener('click', openConfig);
       $('saveConfigBtn').addEventListener('click', saveConfigFromModal);
       $('closeConfigBtn').addEventListener('click', closeConfig);
@@ -1013,6 +1336,12 @@
       });
       resetMenuModal.addEventListener('click', function (e) {
         if (e.target === resetMenuModal) closeResetMenu();
+      });
+      historyModal.addEventListener('click', function (e) {
+        if (e.target === historyModal) closeHistory();
+      });
+      $('endHourModal').addEventListener('click', function (e) {
+        if (e.target === $('endHourModal')) $('endHourModal').classList.remove('active');
       });
 
       // Autoguardado cada 5s
